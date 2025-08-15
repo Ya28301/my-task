@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My_Task</title>
+
+  <!-- الخطوط والأيقونات -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+  <style>
+    :root{
+      --bg: rgb(30, 0, 77);
+      --table-bg: rgb(239, 239, 239);
+      --header-bg: rgb(92, 52, 155);
+      --text-light: #f0f4ff;
+      --card-bg:#fff;
+      --shadow: rgba(97, 97, 97, 0.84);
+      --error:#b30000;
+      --btn-edit:#f59f00; --btn-edit-hover:#e39100;
+      --btn-done:#2fbf71; --btn-done-hover:#27a262;
+      --btn-delete:#e03131; --btn-delete-hover:#c92a2a;
+      --add-bg:#ffffff; --add-hover:#f3f3f3;
+      --done-bg:#ecfdf5; --done-text:#065f46; --done-date:#0e9f6e; --done-border:rgba(52,211,153,.35);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#1a1a2e; --table-bg:#16213e; --text-light:#e6e6e6; --card-bg:#0f3460; --shadow:rgba(0,0,0,.5); --header-bg:#553d67; }
+      .task__title{color:#fff!important;} .task__date{color:#a3a3a3!important;}
+      input,.mini-form{background-color:#1a1a2e!important;color:#fff!important;}
+    }
+
+    body{background-color:var(--bg);font-family:"Tajawal",sans-serif;margin:0;padding:0;transition:background-color .3s;}
+    .center{display:flex;justify-content:center;align-items:flex-start;padding:20px;min-height:100vh;}
+
+    .task_table{
+      background-color:var(--table-bg);width:60%;min-width:320px;max-width:800px;border-radius:12px;overflow:hidden;
+      box-shadow:0 8px 20px rgba(0,0,0,.15);transition:all .3s;position:relative;
+    }
+
+    .task_header{
+      display:flex;align-items:center;justify-content:center;position:relative;
+      background:linear-gradient(135deg,var(--header-bg),#6a3093);padding:16px 12px;color:var(--text-light);
+    }
+    .task_header-title{margin:0;font-size:26px;font-weight:800;letter-spacing:.3px;}
+    .task_header-action{position:absolute;inset-inline-start:12px;}
+
+    button{border:none;font-size:18px;cursor:pointer;background-color:#fff;transition:transform .1s,box-shadow .2s,background-color .2s,filter .2s;}
+    button:active{transform:scale(.95);}
+    button:focus-visible{outline:3px solid rgba(0,0,0,.2);outline-offset:2px;border-radius:8px;}
+
+    .btn-circular{border-radius:50%;width:42px;height:42px;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.15);color:#222;}
+    .btn-circular:hover{filter:brightness(1.1);transform:scale(1.05);}
+
+    #add_btn{background:var(--add-bg);color:#111;}
+    #add_btn:hover{background:var(--add-hover);}
+
+    .task__actions .btn-circular{color:#fff;}
+    .btn-edit{background:var(--btn-edit);} .btn-edit:hover{background:var(--btn-edit-hover);}
+    .btn-done{background:var(--btn-done);} .btn-done:hover{background:var(--btn-done-hover);}
+    .btn-delete{background:var(--btn-delete);} .btn-delete:hover{background:var(--btn-delete-hover);}
+
+    .task.task--done{background-color:var(--done-bg);border:1px solid var(--done-border);box-shadow:0 2px 10px rgba(52,211,153,.15);}
+    .task.task--done .task__title{color:var(--done-text);text-decoration:line-through;}
+    .task.task--done .task__date{color:var(--done-date);}
+
+    .mini-form{padding:16px;background-color:#fff;border-bottom:1px solid #e5e5e5;animation:fadeIn .3s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    .hidden{display:none;}
+    .field{margin-bottom:12px;}
+    .field-inline{display:flex;align-items:center;gap:8px;}
+    label{display:block;margin-bottom:4px;font-weight:600;}
+    input[type="text"],input[type="date"]{width:100%;padding:8px 10px;border:1px solid #d1d1d1;border-radius:8px;font-size:15px;transition:border .3s;}
+    input[type="text"]:focus,input[type="date"]:focus{border-color:var(--header-bg);outline:none;}
+    .form-actions{display:flex;gap:10px;}
+    .btn{padding:8px 14px;border-radius:8px;}
+    .btn.primary{background:#4c6ef5;color:#fff;}
+    .btn.primary:hover{background:#3b5bdb;}
+    .err{color:var(--error);font-weight:bold;margin-top:8px;}
+
+            @keyframes shake {
+          10%, 90% { transform: translateX(-1px); }
+          20%, 80% { transform: translateX(2px); }
+          30%, 50%, 70% { transform: translateX(-4px); }
+          40%, 60% { transform: translateX(4px); }
+          }
+
+
+    #tasks_home{padding:16px;}
+    .task{
+      display:flex;align-items:center;background-color:var(--card-bg);border-bottom:1px solid #eaeaea;padding:12px;gap:14px;
+      transition:all .3s;border-radius:10px;margin-bottom:10px;border-left:4px solid var(--header-bg);position:relative;overflow:hidden;cursor:grab;
+    }
+    .task:hover{box-shadow:0 3px 12px var(--shadow);transform:translateY(-2px);}
+    .task--done{border-left-color:var(--btn-done);}
+    .task::after{content:"";position:absolute;top:0;right:0;width:3px;height:100%;background:linear-gradient(to bottom,var(--header-bg),transparent);}
+    .task__info{flex:1;min-width:0;}
+    .task__title{margin:0 0 6px;font-size:20px;font-weight:800;color:#1f1f1f;word-break:break-word;}
+    .task__date{display:inline-flex;align-items:center;gap:6px;color:#666;font-size:14px;}
+    .task__actions{display:flex;gap:10px;}
+
+    .progress-container{padding:0 16px 10px;}
+    .progress-circle{display:block;margin:8px auto 10px;transform:rotate(-90deg);}
+    .pc-bg,.pc-fg{fill:none;stroke-width:3.5;}
+    .pc-bg{stroke:#e0e0e0;}
+    .pc-fg{stroke:var(--btn-done);stroke-linecap:round;stroke-dasharray:100 100;stroke-dashoffset:100;transition:stroke-dashoffset .5s;}
+    .pc-label{font:700 9px "Tajawal",sans-serif;fill:#666;transform:rotate(90deg);transform-origin:50% 50%;}
+    body.dark-theme .pc-label{fill:#ddd;}
+    .progress-bar{display:none;}
+    .progress-text{text-align:left;font-size:14px;color:#666;margin-bottom:5px;}
+
+    .theme-toggle{position:absolute;inset-inline-end:12px;background:rgba(255,255,255,.2);border-radius:20px;padding:5px;cursor:pointer;display:flex;align-items:center;z-index:2;}
+    .theme-icon{font-size:20px;}
+
+    @keyframes slideIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .task--add-animation{animation:slideIn .3s ease-out;}
+
+    .search-container{padding:10px 16px 0;}
+    .search-box{position:relative;}
+    .search-box input{width:100%;padding:8px 35px 8px 10px;border-radius:20px;border:1px solid #ddd;}
+    .search-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#666;}
+
+    .filter-buttons{display:flex;gap:5px;padding:0 16px 10px;overflow-x:auto;}
+    .filter-btn{padding:5px 10px;border-radius:15px;font-size:13px;white-space:nowrap;background:#eee;border:none;}
+    .filter-btn.active{background:var(--header-bg);color:#fff;}
+
+    body.dark-theme{
+      --bg:#1a1a2e; --table-bg:#16213e; --text-light:#e6e6e6; --card-bg:#0f3460; --shadow:rgba(0,0,0,.5); --header-bg:#553d67;
+    }
+    body.dark-theme .task__title{color:#fff;}
+    body.dark-theme .task__date{color:#a3a3a3;}
+    body.dark-theme input, body.dark-theme .mini-form{background-color:#1a1a2e;color:#fff;}
+
+
+    /* استخدم واجهات النظام المناسبة لكل ثيم */
+input, select, textarea { color-scheme: light; }
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea { color-scheme: dark; }
+
+/* أيقونة منتقي التاريخ (كروم/إيدج) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: .75;
+  cursor: pointer;
+}
+input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
+
+/* عكس الأيقونة في الوضع الليلي + تحسين التباين */
+body.dark-theme input[type="date"] {
+  background-color: #99a1b0;   /* أغمق قليلًا */
+  border-color: #334155;       /* حدود أوضح */
+  color: #e5e7eb;
+}
+body.dark-theme input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: .95;
+}
+
+/* تنسيق البحث في الداكن */
+body.dark-theme .search-box input {
+  background: #0f1a2e;
+  border-color: #334155;
+  color: #e5e7eb;
+}
+body.dark-theme .search-icon { color: #94a3b8; }
+
+/* أزرار الفلترة في الداكن */
+body.dark-theme .filter-btn {
+  background: #0f1a2e;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+body.dark-theme .filter-btn.active {
+  background: var(--header-bg);
+  color: #fff;
+  border-color: transparent;
+}
+#emptyState {
+  margin: 12px 16px 18px;
+  padding: 18px 14px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #4b5563; /* فاتح */
+  background: rgba(0,0,0,0.03);
+  border: 1px dashed rgba(0,0,0,0.12);
+  border-radius: 12px;
+}
+
+body.dark-theme #emptyState {
+  color: #cbd5e1; /* داكن */
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.18);
+}
+
+  </style>
+</head>
+<body>
+  <main class="center">
+    <section class="task_table" aria-labelledby="tasks-title">
+      <header class="task_header">
+        <h1 id="tasks-title" class="task_header-title">مهامي</h1>
+        <div class="task_header-action">
+          <button id="add_btn" class="btn-circular" aria-label="إضافة مهمة">
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          </button>
+        </div>
+        <div class="theme-toggle" id="themeToggle">
+          <span class="material-symbols-outlined theme-icon">brightness_4</span>
+        </div>
+      </header>
+
+      <div class="progress-container">
+        <div class="progress-text" id="progressText" aria-live="polite">0% مكتمل</div>
+        <svg class="progress-circle" viewBox="0 0 36 36" width="72" height="72" role="img" aria-label="نسبة الإنجاز">
+          <circle class="pc-bg" cx="18" cy="18" r="16"></circle>
+          <circle class="pc-fg" id="progressCircle" cx="18" cy="18" r="16"></circle>
+          <text x="18" y="20" text-anchor="middle" class="pc-label" id="progressLabel">0%</text>
+        </svg>
+      </div>
+
+      <div id="srStatus" aria-live="polite" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
+      <div id="emptyState" class="hidden" aria-hidden="true"></div>
+
+      <div class="search-container">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="ابحث في المهام...">
+          <span class="material-symbols-outlined search-icon">search</span>
+        </div>
+      </div>
+
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">الكل</button>
+        <button class="filter-btn" data-filter="today">اليوم</button>
+        <button class="filter-btn" data-filter="upcoming">القادمة</button>
+        <button class="filter-btn" data-filter="completed">المكتملة</button>
+      </div>
+
+      <section id="miniForm" class="mini-form hidden" aria-label="إضافة/تعديل مهمة">
+        <form id="taskForm" novalidate>
+          <div class="field">
+            <label for="titleInput">عنوان المهمة</label>
+            <input id="titleInput" name="title" type="text" placeholder="مثال: قراءة كتاب" />
+          </div>
+          <div class="field">
+            <label for="dateInput">التاريخ</label>
+            <input id="dateInput" name="date" type="date" />
+          </div>
+          <div class="field field-inline">
+            <input id="doneInput" name="isDone" type="checkbox" />
+            <label for="doneInput">مكتملة؟</label>
+          </div>
+          <div class="form-actions">
+            <button id="saveTask" type="submit" class="btn primary">حفظ</button>
+            <button id="cancelAdd" type="button" class="btn">إلغاء</button>
+          </div>
+          <p id="err" class="err" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <div id="tasks_home" role="list" aria-label="قائمة المهام"></div>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+
+    /* ===== العناصر ===== */
+    const tasksHome = document.getElementById('tasks_home');
+    const addBtn = document.getElementById('add_btn');
+    const cancelAddBtn = document.getElementById('cancelAdd');
+    const miniForm = document.getElementById('miniForm');
+    const taskForm = document.getElementById('taskForm');
+    const titleInput = document.getElementById('titleInput');
+    const dateInput = document.getElementById('dateInput');
+    const doneInput = document.getElementById('doneInput');
+    const saveTaskBtn = document.getElementById('saveTask');
+    const errEl = document.getElementById('err');
+    const progressText = document.getElementById('progressText');
+    const searchInput = document.getElementById('searchInput');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const themeToggle = document.getElementById('themeToggle');
+    const srStatus = document.getElementById('srStatus');
+    const emptyStateEl = document.getElementById('emptyState');
+
+    const progressCircle = document.getElementById('progressCircle');
+    const progressLabel  = document.getElementById('progressLabel');
+    const RADIUS = 16;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+    if (progressCircle){
+      progressCircle.style.strokeDasharray = `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
+      progressCircle.style.strokeDashoffset = `${CIRCUMFERENCE}`;
+    }
+
+    /* ===== مفاتيح التخزين ===== */
+    const THEME_KEY = 'tasks_theme';
+    const STORAGE_KEY = 'my_tasks_v2';
+
+    /* ===== حالة التطبيق ===== */
+    let editingIndex = null;
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let lastAction = null; // { type:'delete', task, index, timer }
+    let tasks = [];
+
+    /* ===== أدوات مساعدة ===== */
+    function sanitize(s){
+      const div = document.createElement('div');
+      div.textContent = String(s ?? '');
+      return div.innerHTML;
+    }
+
+    function isValidDateStr(iso){
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+      if (!m) return false;
+      const y = +m[1], mo = +m[2]-1, d = +m[3];
+      const dt = new Date(y, mo, d);
+      return dt.getFullYear()===y && dt.getMonth()===mo && dt.getDate()===d;
+    }
+
+    function validateTask(t){
+      return t && typeof t==='object'
+        && typeof t.title==='string' && t.title.trim().length>0 && t.title.trim().length<=120
+        && typeof t.isDone==='boolean'
+        && typeof t.date==='string' && isValidDateStr(t.date);
+    }
+
+    function announce(msg){ srStatus.textContent = msg; }
+
+    /* ===== تحميل/حفظ آمن (بدون افتراضي) ===== */
+    function safeLoadTasks(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error('storage not array');
+        return parsed.filter(validateTask);
+      }catch(e){
+        console.error('Failed to load tasks:', e);
+        return [];
+      }
+    }
+
+    function safeSaveTasks(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        updateProgress();
+      }catch(e){ console.error('Failed to save tasks:', e); }
+    }
+
+    function formatDate(iso){
+      if (!isValidDateStr(iso)) return 'تاريخ غير صالح';
+      const [y,m,d] = iso.split('-').map(Number);
+      const local = new Date(y, m-1, d);
+      return new Intl.DateTimeFormat('ar-SA',{year:'numeric',month:'long',day:'numeric'}).format(local);
+    }
+
+    function debounce(fn, ms=200){
+      let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+    }
+
+    /* ===== تنظيف قديم لمرة واحدة (اختياري) ===== */
+    (function purgeLegacyDefaultsOnce(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try{
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)){
+          const titles = new Set(arr.map(t => t && t.title));
+          const onlyLegacy = titles.has("قراءة كتاب") && titles.has("حفظ القرآن") && titles.has("إنهاء مشروع") && arr.length <= 3;
+          if (onlyLegacy) localStorage.removeItem(STORAGE_KEY);
+        }
+      }catch{}
+    })();
+
+    /* ===== تهيئة البيانات ===== */
+    tasks = safeLoadTasks();
+
+    /* ===== التقدّم ===== */
+    function updateProgress(){
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.isDone).length;
+      const percent = total ? Math.round((completed/total)*100) : 0;
+      if (progressCircle){
+        const offset = CIRCUMFERENCE * (1 - percent/100);
+        progressCircle.style.strokeDashoffset = String(offset);
+      }
+      if (progressLabel){ progressLabel.textContent = `${percent}%`; }
+      progressText.textContent = `${percent}% مكتمل (${completed} من ${total})`;
+    }
+
+    /* ===== العرض ===== */
+    function renderTasks(){
+      let filtered = tasks;
+
+      if (currentSearch){
+        const q = currentSearch.toLowerCase();
+        filtered = filtered.filter(t => t.title.toLowerCase().includes(q));
+      }
+
+      const today = new Date().toISOString().slice(0,10);
+      if (currentFilter === 'today'){
+        filtered = filtered.filter(t => t.date === today);
+      }else if (currentFilter === 'upcoming'){
+        filtered = filtered.filter(t => t.date > today && !t.isDone);
+      }else if (currentFilter === 'completed'){
+        filtered = filtered.filter(t => t.isDone);
+      }
+
+      if (!filtered.length){
+        tasksHome.innerHTML = '';
+        emptyStateEl.classList.remove('hidden');
+        emptyStateEl.setAttribute('aria-hidden','false');
+        emptyStateEl.textContent = 'لا توجد مهام لعرضها.';
+        updateProgress();
+        return;
+      }else{
+        emptyStateEl.classList.add('hidden');
+        emptyStateEl.setAttribute('aria-hidden','true');
+      }
+
+      const html = filtered.map(task => {
+        const originalIndex = tasks.indexOf(task);
+        const doneClass = task.isDone ? ' task--done' : '';
+        return `
+          <div class="task${doneClass}" role="listitem" data-index="${originalIndex}" draggable="true">
+            <div class="task__info">
+              <h2 class="task__title">${sanitize(task.title)}</h2>
+              <div class="task__date">
+                <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                <span>${formatDate(task.date)}</span>
+              </div>
+            </div>
+            <div class="task__actions">
+              <button class="btn-circular btn-edit" title="تعديل" aria-label="تعديل المهمة"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+              <button class="btn-circular btn-done" title="إنهاء/إلغاء الإنهاء" aria-pressed="${task.isDone}" aria-label="تبديل حالة الإنهاء"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+              <button class="btn-circular btn-delete" title="حذف" aria-label="حذف المهمة"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      tasksHome.innerHTML = html;
+      updateProgress();
+    }
+
+    /* ===== النماذج ===== */
+    function resetForm(){ taskForm.reset(); errEl.textContent=''; editingIndex=null; saveTaskBtn.textContent='حفظ'; }
+    function openForm(){ resetForm(); miniForm.classList.remove('hidden'); titleInput.focus(); }
+    function closeForm(){ miniForm.classList.add('hidden'); editingIndex=null; }
+    function showError(msg){ errEl.textContent=msg; errEl.style.animation='shake .5s'; setTimeout(()=>errEl.style.animation='',500); }
+    function clearError(){ errEl.textContent=''; }
+
+    taskForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const title = titleInput.value.trim();
+      const date  = dateInput.value;
+      const isDone = doneInput.checked;
+
+      if (!title){ showError('الرجاء إدخال عنوان المهمة'); titleInput.focus(); return; }
+      if (title.length>120){ showError('العنوان طويل جدًا (الحد 120 حرفًا)'); titleInput.focus(); return; }
+      if (!isValidDateStr(date)){ showError('الرجاء اختيار تاريخ صالح'); dateInput.focus(); return; }
+      clearError();
+
+      const task = { title, date, isDone };
+      if (editingIndex !== null){ tasks[editingIndex] = task; announce('تم تحديث المهمة.'); }
+      else{ tasks.unshift(task); announce('تمت إضافة مهمة جديدة.'); }
+
+      safeSaveTasks(); renderTasks(); closeForm();
+    });
+
+    /* ===== أحداث المهام ===== */
+    tasksHome.addEventListener('click', (e)=>{
+      const card = e.target.closest('.task'); if (!card) return;
+      const idx = Number(card.dataset.index); if (Number.isNaN(idx)) return;
+
+      if (e.target.closest('.btn-done')){
+        tasks[idx].isDone = !tasks[idx].isDone;
+        announce(tasks[idx].isDone ? 'تم وضع المهمة كمكتملة.' : 'تم إلغاء اكتمال المهمة.');
+        safeSaveTasks(); renderTasks();
+      } else if (e.target.closest('.btn-delete')){
+        if (confirm('هل تريد حذف هذه المهمة؟')){
+          const removed = tasks.splice(idx,1)[0];
+          if (lastAction?.timer) clearTimeout(lastAction.timer);
+          lastAction = { type:'delete', task:removed, index:idx, timer:setTimeout(()=>{lastAction=null;},5000) };
+          announce('تم حذف المهمة. يمكنك الضغط على Ctrl+Z للتراجع خلال 5 ثوانٍ.');
+          safeSaveTasks(); renderTasks();
+        }
+      } else if (e.target.closest('.btn-edit')){
+        editingIndex = idx;
+        const t = tasks[idx];
+        titleInput.value = t.title; dateInput.value = t.date; doneInput.checked = t.isDone;
+        saveTaskBtn.textContent = 'تحديث'; openForm();
+      }
+    });
+
+    /* ===== البحث والتصفية ===== */
+    const onSearch = debounce(()=>{
+      currentSearch = searchInput.value; renderTasks();
+    },200);
+    searchInput.addEventListener('input', onSearch);
+
+    filterButtons.forEach(btn=>{
+      btn.addEventListener('click', function(){
+        filterButtons.forEach(b=>b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    /* ===== السحب والإفلات ===== */
+    let draggedItem = null;
+    tasksHome.addEventListener('dragstart',(e)=>{
+      const el = e.target.closest('.task'); if (!el) return;
+      draggedItem = el; el.classList.add('dragging'); setTimeout(()=> el.style.opacity='0.5',0);
+    });
+    tasksHome.addEventListener('dragover',(e)=>{
+      e.preventDefault(); if (!draggedItem) return;
+      const after = getDragAfterElement(tasksHome, e.clientY);
+      if (after==null){ tasksHome.appendChild(draggedItem); } else { tasksHome.insertBefore(draggedItem, after); }
+    });
+    tasksHome.addEventListener('dragend',()=>{
+      if (!draggedItem) return;
+      draggedItem.style.opacity='1'; draggedItem.classList.remove('dragging');
+      updateTaskOrderFromDOM(); draggedItem=null;
+    });
+
+    function getDragAfterElement(container, y){
+      const els = [...container.querySelectorAll('.task:not(.dragging)')];
+      return els.reduce((closest,child)=>{
+        const box = child.getBoundingClientRect();
+        const offset = y - (box.top + box.height/2);
+        if (offset < 0 && offset > closest.offset){ return {offset, element:child}; }
+        return closest;
+      }, {offset:Number.NEGATIVE_INFINITY, element:null}).element;
+    }
+
+    function updateTaskOrderFromDOM(){
+      const newTasks = [];
+      tasksHome.querySelectorAll('.task').forEach(el=>{
+        const idx = Number(el.dataset.index);
+        if (!Number.isNaN(idx)) newTasks.push(tasks[idx]);
+      });
+      if (newTasks.length === tasks.length){
+        tasks = newTasks; safeSaveTasks(); announce('تم تحديث ترتيب المهام.'); renderTasks();
+      }
+    }
+
+    /* ===== تراجع عام (Ctrl+Z) ===== */
+    window.addEventListener('keydown',(e)=>{
+      if (e.ctrlKey && e.key.toLowerCase()==='z' && lastAction?.type==='delete'){
+        const { task, index } = lastAction;
+        tasks.splice(Math.min(index, tasks.length), 0, task);
+        if (lastAction.timer) clearTimeout(lastAction.timer);
+        lastAction = null;
+        announce('تم التراجع عن الحذف.');
+        safeSaveTasks(); renderTasks(); e.preventDefault();
+      }
+    });
+
+    /* ===== الثيم ===== */
+    themeToggle.addEventListener('click', ()=>{
+      const isDark = document.body.classList.toggle('dark-theme');
+      themeToggle.querySelector('.theme-icon').textContent = isDark ? 'brightness_7' : 'brightness_4';
+      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+    });
+    (function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY);
+      const isDark = saved ? saved==='dark' : false;
+      if (isDark) document.body.classList.add('dark-theme');
+      themeToggle.querySelector('.theme-icon').textContent = isDark ? 'brightness_7' : 'brightness_4';
+    })();
+
+    /* ===== تهيئة أولية ===== */
+    dateInput.valueAsDate = new Date();
+    addBtn.addEventListener('click', openForm);
+    cancelAddBtn.addEventListener('click', closeForm);
+    renderTasks(); updateProgress();
+  </script>
+</body>
+</html>
