@@ -194,6 +194,130 @@ body.dark-theme #emptyState {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.18);
 }
+/* ========== أساسيات عامة للجوال ========== */
+@media (max-width: 768px) {
+  .center { padding: 12px; }
+  .task_table {
+    width: min(100%, 800px);
+    margin-inline: auto;
+    border-radius: 10px;
+  }
+
+  /* الهيدر */
+  .task_header { padding: 12px 10px; }
+  .task_header-title { font-size: 22px; }
+  .btn-circular { width: 40px; height: 40px; }
+  .theme-icon { font-size: 18px; }
+}
+
+/* شاشات صغيرة جدًا */
+@media (max-width: 420px) {
+  .center { padding: 8px; }
+  .task_table { border-radius: 8px; }
+
+  /* دائرة التقدم أصغر */
+  .progress-circle { width: 56px; height: 56px; }
+  .pc-label { font-size: 8px; }
+
+  /* البحث */
+  .search-container { padding: 8px 10px 0; }
+  .search-box input {
+    padding: 10px 36px 10px 12px;
+    font-size: 16px; /* يمنع زوم iOS */
+    border-radius: 16px;
+  }
+  .search-icon { left: 12px; }
+
+  /* الفلاتر (تمرير أفقي سَلِس) */
+  .filter-buttons {
+    gap: 8px;
+    padding: 8px 10px 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .filter-buttons::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 14px;
+    scroll-snap-align: start;
+  }
+
+  /* كروت المهام */
+  .task {
+    padding: 10px;
+    gap: 10px;
+    cursor: default;         /* لا تُظهر grab على الجوال */
+    touch-action: pan-y;     /* يسمح بالسكرول الطبيعي */
+  }
+  .task__title { font-size: 16px; margin-bottom: 4px; }
+  .task__date  { font-size: 12px; }
+
+  .task__actions { gap: 6px; }
+  .task__actions .btn-circular { width: 36px; height: 36px; }
+
+  /* الفورم */
+  .mini-form { padding: 12px; }
+  input[type="text"], input[type="date"] {
+    height: 44px;           /* لمسة مريحة للأصابع */
+    font-size: 16px;        /* يمنع زوم iOS */
+    border-radius: 10px;
+  }
+  .btn { padding: 10px 14px; border-radius: 10px; }
+}
+
+/* تحسينات الوضع الليلي على الجوال */
+@media (max-width: 420px) {
+  body.dark-theme .search-box input {
+    background: #0f1a2e;
+    border-color: #334155;
+    color: #e5e7eb;
+  }
+  body.dark-theme .filter-btn {
+    background: #0f1a2e; color: #cbd5e1; border: 1px solid #334155;
+  }
+}
+
+/* أيقونة منتقي التاريخ أوضح على الجوال */
+input[type="date"]::-webkit-calendar-picker-indicator{
+  opacity: .85; cursor: pointer;
+}
+body.dark-theme input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: invert(1); opacity: 1;
+}
+
+/* رسالة الحالة “لا توجد مهام” (ثابتة في الفاتح والداكن) */
+#emptyState {
+  margin: 12px 12px 16px;
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #4b5563;
+  background: rgba(0,0,0,.03);
+  border: 1px dashed rgba(0,0,0,.12);
+  border-radius: 12px;
+}
+body.dark-theme #emptyState{
+  color: #cbd5e1;
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.18);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   </style>
 </head>
