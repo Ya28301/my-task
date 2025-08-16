@@ -623,7 +623,34 @@
       .data-actions {
         bottom: 140px;
       }
-    }
+    }   
+
+/* ⬇︎ صغّر المودال وثبّت له أقصى ارتفاع مع سكرول داخلي */
+.modal-content{
+  width: 92%;
+  max-width: 420px;       /* كانت 500px */
+  padding: 18px;          /* كانت 25px */
+  max-height: 80vh;       /* يمنع طغيان الارتفاع */
+  overflow-y: auto;       /* سكرول داخل المودال */
+}
+
+/* خفّض حجم حقول الإدخال على الشاشات الكبيرة (لابتوب وما فوق) */
+@media (min-width: 992px){
+  .modal-header h2{ font-size: 18px; }           /* كانت 20px */
+  .form-group label{ font-size: 13px; margin-bottom: 6px; }
+  .form-group input,
+  .form-group textarea,
+  .form-group select{
+    padding: 10px 12px;                          /* كانت 12px 15px */
+    font-size: 14px;                              /* كانت 16px */
+  }
+  .form-group textarea{ min-height: 80px; }       /* كانت 100px */
+}
+
+
+
+
+
   </style>
 </head>
 <body>
